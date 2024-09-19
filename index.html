@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Video Player</title>
+    <title>Professional Video Player</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
@@ -13,8 +13,8 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
             background-color: #f5f6f7;
+            overflow-x: hidden; /* To prevent horizontal scrolling */
         }
         header {
             background-color: #1e2a38;
@@ -23,16 +23,19 @@
             text-align: center;
             font-size: 28px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 10px;
             gap: 20px;
+            overflow-y: auto; /* Enable scrolling within the container */
         }
         .lecture-select {
-            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -50,11 +53,13 @@
         .video-player-wrapper {
             position: relative;
             width: 100%;
-            height: 50vh;
+            max-width: 960px;
+            margin: 0 auto;
             background: #000;
             border-radius: 10px;
-            overflow: hidden;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            aspect-ratio: 16 / 9; /* Standard aspect ratio for HD video */
         }
         video {
             width: 100%;
@@ -62,15 +67,15 @@
             object-fit: cover;
         }
         .controls {
-            position: absolute;
-            bottom: 0;
+            margin-top: 10px; /* Move controls below video */
             width: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
         }
         .controls button {
             background-color: #3498db;
@@ -80,10 +85,11 @@
             font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
         }
         .controls button:hover {
             background-color: #2980b9;
+            transform: scale(1.05);
         }
         .controls button:disabled {
             background-color: #7f8c8d;
@@ -115,13 +121,17 @@
             text-align: center;
             padding: 15px;
             position: relative;
-            bottom: 0;
             box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
         }
         @media (max-width: 768px) {
+            .video-player-wrapper {
+                aspect-ratio: 16 / 9;
+                height: auto;
+                max-height: 50vh; /* Adjust the height for smaller screens */
+            }
             .controls {
-                flex-direction: column;
-                align-items: flex-start;
+                margin-top: 10px; /* Ensure controls are below video */
+                flex-direction: row; /* Keep buttons in a row */
                 gap: 5px;
             }
             .controls button {
@@ -129,14 +139,26 @@
                 max-width: 150px;
             }
             .pdf-viewer {
-                max-height: 40vh;
+                max-height: 20vh;
+            }
+        }
+        @media (min-width: 769px) and (max-width: 1200px) {
+            .video-player-wrapper {
+                height: auto;
+                max-height: 55vh;
+            }
+        }
+        @media (min-width: 1201px) {
+            .video-player-wrapper {
+                height: auto;
+                max-height: 65vh;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        Lakshyanischya
+        Professional Video Player
     </header>
     <div class="container">
         <div class="lecture-select">
@@ -148,13 +170,15 @@
 
         <div class="video-player-wrapper">
             <video id="videoPlayer" controls></video>
-            <div class="controls">
-                <button id="playPauseButton"><i class="fas fa-play"></i></button>
-                <button id="rewindButton"><i class="fas fa-backward"></i> 10s</button>
-                <button id="fastForwardButton">10s <i class="fas fa-forward"></i></button>
-                <button id="prevButton"><i class="fas fa-chevron-left"></i> Previous</button>
-                <button id="nextButton">Next <i class="fas fa-chevron-right"></i></button>
-            </div>
+        </div>
+
+        <!-- Controls placed BELOW the video -->
+        <div class="controls">
+            <button id="playPauseButton" aria-label="Play/Pause"><i class="fas fa-play"></i></button>
+            <button id="rewindButton" aria-label="Rewind 10 seconds"><i class="fas fa-backward"></i> 10s</button>
+            <button id="fastForwardButton" aria-label="Fast forward 10 seconds">10s <i class="fas fa-forward"></i></button>
+            <button id="prevButton" aria-label="Previous Video"><i class="fas fa-chevron-left"></i> Previous</button>
+            <button id="nextButton" aria-label="Next Video">Next <i class="fas fa-chevron-right"></i></button>
         </div>
 
         <div class="pdf-viewer">
@@ -164,7 +188,7 @@
     </div>
 
     <footer>
-        &copy; 2024 Lakshyanischya. All rights reserved.
+        &copy; 2024 Professional Video Player. All rights reserved.
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.0.0/hls.min.js"></script>
@@ -234,39 +258,20 @@
                 }
             }
 
-            function rewind() {
-                videoPlayer.currentTime -= 10;
-            }
+            playPauseButton.addEventListener('click', playPause);
 
-            function fastForward() {
-                videoPlayer.currentTime += 10;
-            }
-
-            function nextVideo() {
-                const selectedIndex = parseInt(lectureSelect.value, 10);
-                if (selectedIndex < videoLinks.length - 1) {
-                    lectureSelect.value = selectedIndex + 1;
-                    loadVideo(selectedIndex + 1);
-                }
-            }
-
-            function prevVideo() {
-                const selectedIndex = parseInt(lectureSelect.value, 10);
-                if (selectedIndex > 0) {
-                    lectureSelect.value = selectedIndex - 1;
-                    loadVideo(selectedIndex - 1);
-                }
-            }
-
-            lectureSelect.addEventListener('change', (event) => {
-                loadVideo(parseInt(event.target.value, 10));
+            rewindButton.addEventListener('click', () => {
+                videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 10);
             });
 
-            playPauseButton.addEventListener('click', playPause);
-            rewindButton.addEventListener('click', rewind);
-            fastForwardButton.addEventListener('click', fastForward);
-            nextButton.addEventListener('click', nextVideo);
-            prevButton.addEventListener('click', prevVideo);
+            fastForwardButton.addEventListener('click', () => {
+                videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 10);
+            });
+
+            lectureSelect.addEventListener('change', (event) => {
+                const selectedLecture = event.target.value;
+                loadVideo(selectedLecture);
+            });
 
             fetchData();
         });
